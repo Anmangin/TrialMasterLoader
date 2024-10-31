@@ -2,7 +2,7 @@
 %let git_macro_version = 0.0.0;
 %let git_macro_version_date = 07/07/2020;
 
-%if not %symexist(dir_path) or not %symexist(local_folder) %then %do;
+%if %symexist(dir_path)= 0  or %symexist(local_folder)= 0  %then %do;
     %put ERROR: Macros SBE: la macrovariable "dir_path" et "local_folder" doit être déclarée;
 %end;
 %else %do;
