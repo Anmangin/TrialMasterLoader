@@ -10,11 +10,12 @@
    - Les queries doivent etre importees dans le fichier Queries.xlsx.
 */
 
-
+%macro check;
  %if %symexist(path) = 0 %then %do;
         %put ERROR: importation.sas la macrovariable path &path n a pas ete definit.;
     %end;
-
+%mend;
+%check;
 %let pathin = &path\IN;      /* Chemin d entree contenant les fichiers XPT de l etude */
 %let pathout = &path\OUT;    /* Chemin de sortie pour les fichiers exportes */
 
