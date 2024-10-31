@@ -24,6 +24,12 @@ l'imports des queries doit etre faire dans le fichier Queries.xlsx;
 Crée par Anthony, diffusé le 16.05.2018
 objectif du fichier : ce fichier a pour but de créer l'ensemble des macro nécéssaire pour importer une étude. On l'appelle généralement grâce à une fonction %INCLUDE;
 
+%if not(%symexist(pathin) and %symexist(pathout)) %then %do;
+%put ERROR: Macros SBE: la macrovariable "dir_path" doit être déclarée;%end; 
+%else %do;  
+	
+
+
  /* 3 types de macro variable */
 %let daterep=%sysfunc(today(),date8.);
 %let datetemp=%sysfunc(today(),yymmdd9.);
@@ -129,18 +135,11 @@ input contient l'adresse du dossier a impoter, et output le nom de la libname ou
 
 
 
-********************** IMPORT DES STATUS *********************************;
-%getlib(Status,&pathout\Status);
-%openFile(Status,&pathin\AuditStatus);
-********************** IMPORT DES DONNéES *********************************;
-%getlib(DB,&pathout\DB);
-%openFile(DB,&pathin.);
-
-%getlib(Note,&pathout.\Notes);
-%openFile(Note,&pathin.\Notes);
 
 
 /*-> pour le pb des format de date */
 proc format;
 value $ATE;
 run;
+
+%end; 
