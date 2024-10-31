@@ -35,7 +35,6 @@ objectif du fichier : ce fichier a pour but de créer l'ensemble des macro néc�
 %let datetemp=%sysfunc(today(),yymmdd9.);
 data _null_;test=strip("&datetemp");datefileL=tranwrd(test,"-",".");call symputx('datefile',datefileL);run;
 
-%include "&pathin\procformat.sas";
 
 
 *createfolder : créer un dossier;
