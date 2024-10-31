@@ -1,159 +1,170 @@
+/****************************************************************************************************************
+                                           Fichier de relance TrialMaster, Étude MEDEA
+****************************************************************************************************************/
 
-************************************************************************************************************************************************************************
-                                                               Fichier de de relance TrialMaster, Etude MEDEA
-************************************************************************************************************************************************************************
------------------- ne rien toucher aprÃ¨s ici ---------------------
-
-Description du dossier :
-dossier DB : contient les donnÃ©es de l'Ã©tude exportÃ©
-dossier Status : contients les statuts eportÃ© de l'etude
-dossier IMP : contients les Ã©lÃ©ments a importer.
-au niveau de l'export dans trialmaster, il est important de choisir XportSas et codelist = Yes.
-l'imports des queries doit etre faire dans le fichier Queries.xlsx;
-;
+/* Description du dossier :
+- dossier IN : contient les éléments à importer, directemenet issu du telechargement de TrialMaster après avec decompréssé l'archive.
+-Dossier OUT : c'est ici qu'on stock la base qu'on ba lire dans sas et toutes les sorties.
 
 
+   - Les queries doivent être importées dans le fichier Queries.xlsx.
+*/
 
 
+ %if %symexist(path) = 0 %then %do;
+        %put ERROR: importation.sas la macrovariable path &path n`a pas été definit.;
+    %end;
 
-***************************************************************************************************************************************************************************
+%let pathin = &path\IN;      /* Chemin d`entrée contenant les fichiers XPT de l`étude */
+%let pathout = &path\OUT;    /* Chemin de sortie pour les fichiers exportés */
 
-                                                              FICHIER STANDARD POUR L'IMPORTATION D'UNE ETUDE MACRO4 DANS SAS
+/****************************************************************************************************************
+                                          FICHIER STANDARD POUR L`IMPORTATION D`UNE ÉTUDE MACRO4 DANS SAS
+****************************************************************************************************************/
+/* Créé par Anthony, diffusé le 16.05.2018
+   Objectif : Ce fichier a pour but de créer l`ensemble des macros nécessaires pour importer une étude. 
+   Généralement, on l`appelle grâce à la fonction %INCLUDE.
+*/
 
-***************************************************************************************************************************************************************************
-CrÃ©e par Anthony, diffusÃ© le 16.05.2018
-objectif du fichier : ce fichier a pour but de crÃ©er l'ensemble des macro nÃ©cÃ©ssaire pour importer une Ã©tude. On l'appelle gÃ©nÃ©ralement grÃ¢ce Ã  une fonction %INCLUDE;
-
-%if %symexist(pathin)=0 or %symexist(pathout)=0 %then %do;
-%put ERROR: Macros SBE: la macrovariable "pathin" : &pathin doit Ãªtre dÃ©clarÃ©e ainsi que "pathout"  &pathout;%end; 
-%else %do;  
-
-
- /* 2 types de macro variable */
-
+/* Déclaration de deux macros variables pour les dates */
 %let daterep = %sysfunc(today(), date8.);
 %let datefile = %sysfunc(tranwrd(%sysfunc(today(), yymmdd10.), -, .));
 
-
-*createfolder : crÃ©er un dossier;
+/* Macro pour créer un dossier */
 %macro CreatFolder(dossier);
-option NOXWAIT;	 /* pecifies that the command processor automatically returns to the SAS session after the specified command is executed. You do not have to type EXIT. */
-x mkdir "&dossier.";  /* crÃ©er le dossier en commande dos */
+    option NOXWAIT;  /* Permet de retourner automatiquement à SAS après l`exécution de la commande */
+    x mkdir "&dossier.";  /* Création du dossier en commande DOS */
 %mend;
 
-* Getlib : crÃ©e un dossier et le place en libname;
-%macro Getlib(nom,dossier);
-option NOXWAIT;	
-%if %sysfunc(fexist(&basefile)) NE 0 %then %do;/* pecifies that the command processor automatically returns to the SAS session after the specified command is executed. You do not have to type EXIT. */
-x mkdir "&dossier.";
-%end;/* crÃ©er le dossier en commande dos  NOTE: pas de message d'erreur si le dossier est dÃ©jÃ  prÃ©sent*/
-libname &nom "&dossier.";/* crÃ©ation de la libname*/
-%vider(&nom);
+/* Macro Getlib : Crée un dossier et le place en libname */
+%macro Getlib(nom, dossier);
+    option NOXWAIT;  
+    %if %sysfunc(fexist(&basefile)) NE 0 %then %do;
+        x mkdir "&dossier.";  /* Création du dossier en commande DOS si inexistant */
+    %end;
+    libname &nom "&dossier."; /* Assignation de la libname */
+    %vider(&nom);  /* Appel de la macro pour vider le contenu si nécessaire */
 %mend;
 
+/* Macro pour créer une table de noms */
 %macro getnomtable(stu);
-/*    crÃ©ation d'une table nommÃ© nomtable dans la work avec la liste de table prÃ©sent dans la libname appellÃ© */
-%let stuMaj=%sysfunc(UPCASE(&stu.));
-
-data nomtable ;set sashelp.vstable;where libname="&stuMaj";
-if memname='CLINICALTRIAL' or memname='QGROUP' or  memname='QGROUPQUESTION' or memname='STUDYVISITCRFPAGE' or memname='DATAITEMRESPONSE' or memname='SITE' or memname='DATAITEM' or memname='CLINICALTRIAL' or memname='CRFELEMENT' then delete;
-if memname='CRFPAGE' or memname='CRFPAGEINSTANCE' or memname='DATAITEMVALIDATION' or memname='MACROCOUNTRY' or memname='DATAITEMVALIDATION' then delete;
-if memname='MIMESSAGE' or memname='STUDYVISIT' or memname='TRIALSITE' or memname='TRIALSUBJECT' or memname='VALIDATIONTYPE' or memname='VALUEDATA' then delete;
-if memname="TEMP" or   memname="FICMYFN"  or   memname="FM" or memname="FINAL" or memname="NOMTABLE"  or memname="TRIAL" or memname="SITE" or memname="VISIT" or memname="VISIT1"  or memname="PAT" or memname="ERROR" then delete;
-run;
+    /* Création d`une table nommée nomtable dans WORK avec la liste des tables présentes dans la libname spécifiée */
+    %let stuMaj = %sysfunc(UPCASE(&stu.));
+    data nomtable;
+        set sashelp.vstable;
+        where libname = "&stuMaj";
+        /* Suppression des tables non nécessaires */
+        if memname in (`CLINICALTRIAL`, `QGROUP`, `QGROUPQUESTION`, `STUDYVISITCRFPAGE`, `DATAITEMRESPONSE`, 
+                       `SITE`, `DATAITEM`, `CRFELEMENT`, `CRFPAGE`, `CRFPAGEINSTANCE`, 
+                       `DATAITEMVALIDATION`, `MACROCOUNTRY`, `MIMESSAGE`, `STUDYVISIT`, 
+                       `TRIALSITE`, `TRIALSUBJECT`, `VALIDATIONTYPE`, `VALUEDATA`, 
+                       `TEMP`, `FICMYFN`, `FM`, `FINAL`, `NOMTABLE`, `TRIAL`, 
+                       `VISIT`, `VISIT1`, `PAT`, `ERROR`) then delete;
+    run;
 %mend;
 
-
-
-%MACRO suppr(table);
-%put activation de la macro suppr suppression de la table &table;
-proc sql noprint; 
-Drop Table &table;
-quit;
+/* Macro pour supprimer une table */
+%macro suppr(table);
+    %put Activation de la macro suppr : suppression de la table &table;
+    proc sql noprint; 
+        drop table &table;
+    quit;
 %mend;
 
-
+/* Macro pour vider toutes les tables d`une libname */
 %macro vider(lib);
-/*supprime toute les tables d'une Libname ;*/
-%put macro vider activÃ©e  lib=&lib;
-%let stu=%sysfunc(UPCASE(&lib.));
-data nomtable ;set sashelp.vstable;where libname="&lib.";
-if memname='TIMEDOWN' or memname='timedown' or memname="nomtable" then delete;
-run;
+    %put Macro vider activée : lib = &lib;
+    data nomtable;
+        set sashelp.vstable;
+        where libname = "&lib.";
+        if memname in (`TIMEDOWN`, `timedown`, `nomtable`) then delete;
+    run;
+    
+    proc sql noprint;
+        select distinct count(*) into: nbtable from nomtable;
+    quit;
 
-proc sql noprint;select distinct count(*) into: nbtable from nomtable; quit;
-%do i=1 %to &nbtable.;
-data _null_ ;set nomtable; if _N_=&i then call symput("memname",memname) ; run;
-%suppr(&lib..&memname.);
-%end;
+    %do i = 1 %to &nbtable.;
+        data _null_;
+            set nomtable;
+            if _N_ = &i then call symput("memname", memname);
+        run;
+        %suppr(&lib..&memname.);
+    %end;
 %mend;
 
+/* Macro openFile : ouvre tous les fichiers XPT et les copie dans une libname */
+%macro openFile(Libname, XPTpath, basefile);
+    %getlib(&Libname, &basefile);
+    %if %sysfunc(fexist(&basefile)) NE 0 %then %do;
+        %put ERROR: Le dossier &basefile n`existe pas;
+    %end;
+    %else %if %sysfunc(libref(&Libname)) NE 0 %then %do;
+        %put ERROR: La libname &Libname n`a pas été créée;
+    %end;
+    %else %if %sysfunc(fexist(&XPTpath)) NE 0 %then %do;
+        %put ERROR: Le dossier &XPTpath n`existe pas;
+    %end;
+    %else %do;
+        filename myFN "&XPTpath";
+        data FicmyFN(keep = fichier);
+            length fichier $50;
+            retain did;
+            did = dopen("myFN");
+            if did > 0 then do;
+                i = 1;
+                do while (dread(did, i) ne "");
+                    fichier = dread(did, i);
+                    output;
+                    i = i + 1;
+                end;
+                did = dclose(did);
+            end;
+        run;
+        
+        data FicmyFN;
+            set FicmyFN;
+            where find(fichier, `.xpt`) > 0;
+        run;
 
+        proc sql noprint;
+            select count(*) into :nbtable from FicmyFN;
+        quit;
 
-****** macro openfile ***
-* la macro open file ouvre tous les fichier XPT pour les copier dans une libname
-input contient l'adresse du dossier a impoter, et output le nom de la libname ou placer les tables a importer;
+        data _null_;
+            set FicmyFN end = findetable;
+            call symputx(`fichier` || left(_N_), fichier);
+            call symputx(`nomtable` || left(_N_), substr(fichier, 1, length(fichier) - 4));
+            if findetable then call symputx(`nbtable`, _N_);
+        run;
 
-%macro openFile(Libname,XPTpath,basefile);
-%getlib(&Libname,&basefile);
-%if %sysfunc(fexist(&basefile)) NE 0 %then 
-%do;
-	%put ERROR: le dossier &basefile  n existe pas;
-%end; 
-%else %if %sysfunc(libref(&Libname)) NE  0 %then 
-%do;
-
-%put ERROR: le la libname &Libname n`as pas été faite ;
-%end; 
-%else %if %sysfunc(fexist(&XPTpath)) NE 0  %then 
-%do;
-%put ERROR: le la libname &Libname n`as pas été faite ;
-%end; 
-%else %do;  
-
-	filename myFN "&XPTpath";
-	Data FicmyFN(keep = fichier ); 
-	length fichier $50; 
-	retain did ; 
-	did = dopen("myFN"); 
-		if did > 0 then do; 
-			i = 1; 
-			do while (dread(did,i) ne "" ) ; 
-				fichier = dread(did,i); 
-				output;
-				i = i + 1 ; 
-			end; 
-		did = dclose(did); 
-		end; 
-	Run;
-	data FicmyFN;
-	set FicmyFN;
-	where find(fichier,'.xpt')>0;
-	run;
-
-
-	proc sql noprint; select count(*) into : nbtable from FicmyFN;quit;
-	data _null_; set FicmyFN end=findetable; 
-	call symputx('fichier'||left(_N_),fichier);
-	call symputx('nomtable'||left(_N_),substr(fichier,1,length(fichier)-4));
-	if findetable then call symputx('nbtable',_N_);
-	run;
-	%do i=1 %to &nbtable;
-		%put import de la table &&fichier&i.;
-	libname xptfile xport  "&XPTpath\&&fichier&i.";
-	proc copy in=xptfile out=&Libname;run;
-	%end;
-%suppr(ficmyfn);
-%end;
+        %do i = 1 %to &nbtable.;
+            %put Import de la table &&fichier&i.;
+            libname xptfile xport "&XPTpath\&&fichier&i.";
+            proc copy in = xptfile out = &Libname;
+            run;
+        %end;
+        
+        %suppr(ficmyfn);
+    %end;
 %mend;
 
-
-
-
-
-/*-> pour le pb des format de date */
+/* Format pour les dates */
 proc format;
-value $ATE;
+    value $ATE;
 run;
 
-%end; 
+/* Macro pour charger les données */
+%macro dataLoad(DB = 0, note = 0, status = 0, format = 1);
+    %if %symexist(pathin) = 0 or %symexist(pathout) = 0 or %symexist(path) = 0 %then %do;
+        %put ERROR: Macros SBE : La macrovariable "pathin" (&pathin) ,"pathout" (&pathout) et path  &path doivent être déclarées;
+    %end;
+    %else %do;
+		%if &format %include "&pathin\procformat.sas";
+        %if &DB %then %openFile(DB, &pathin., &pathout\DB);
+        %if &note %then %openFile(Note, &pathin.\Notes, &pathout.\Notes);
+        %if &status %then %openFile(Status, &pathin\AuditStatus, &pathout\Status);
+    %end;
+%mend;
+
+%put NOTE: ########################### Chargement des macros d`importation terminé #######################;
