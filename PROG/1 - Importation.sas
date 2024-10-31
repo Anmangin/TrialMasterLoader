@@ -1,65 +1,65 @@
 /****************************************************************************************************************
-                                           Fichier de relance TrialMaster, Étude MEDEA
+                                           Fichier de relance TrialMaster, Etude MEDEA
 ****************************************************************************************************************/
 
 /* Description du dossier :
-- dossier IN : contient les éléments à importer, directemenet issu du telechargement de TrialMaster après avec decompréssé l'archive.
--Dossier OUT : c'est ici qu'on stock la base qu'on ba lire dans sas et toutes les sorties.
+- dossier IN : contient les elements a importer, directement issu du telechargement de TrialMaster apres avec decompressé l archive.
+- Dossier OUT : c est ici qu on stock la base qu on va lire dans sas et toutes les sorties.
 
 
-   - Les queries doivent être importées dans le fichier Queries.xlsx.
+   - Les queries doivent etre importees dans le fichier Queries.xlsx.
 */
 
 
  %if %symexist(path) = 0 %then %do;
-        %put ERROR: importation.sas la macrovariable path &path n`a pas été definit.;
+        %put ERROR: importation.sas la macrovariable path &path n a pas ete definit.;
     %end;
 
-%let pathin = &path\IN;      /* Chemin d`entrée contenant les fichiers XPT de l`étude */
-%let pathout = &path\OUT;    /* Chemin de sortie pour les fichiers exportés */
+%let pathin = &path\IN;      /* Chemin d entree contenant les fichiers XPT de l etude */
+%let pathout = &path\OUT;    /* Chemin de sortie pour les fichiers exportes */
 
 /****************************************************************************************************************
-                                          FICHIER STANDARD POUR L`IMPORTATION D`UNE ÉTUDE MACRO4 DANS SAS
+                                          FICHIER STANDARD POUR L IMPORTATION D UNE ETUDE MACRO4 DANS SAS
 ****************************************************************************************************************/
-/* Créé par Anthony, diffusé le 16.05.2018
-   Objectif : Ce fichier a pour but de créer l`ensemble des macros nécessaires pour importer une étude. 
-   Généralement, on l`appelle grâce à la fonction %INCLUDE.
+/* Cree par Anthony, diffuse le 16.05.2018
+   Objectif : Ce fichier a pour but de creer l ensemble des macros necessaires pour importer une etude. 
+   Generalement, on l appelle grace a la fonction %INCLUDE.
 */
 
-/* Déclaration de deux macros variables pour les dates */
+/* Declaration de deux macros variables pour les dates */
 %let daterep = %sysfunc(today(), date8.);
 %let datefile = %sysfunc(tranwrd(%sysfunc(today(), yymmdd10.), -, .));
 
-/* Macro pour créer un dossier */
+/* Macro pour creer un dossier */
 %macro CreatFolder(dossier);
-    option NOXWAIT;  /* Permet de retourner automatiquement à SAS après l`exécution de la commande */
-    x mkdir "&dossier.";  /* Création du dossier en commande DOS */
+    option NOXWAIT;  /* Permet de retourner automatiquement a SAS apres l execution de la commande */
+    x mkdir "&dossier.";  /* Creation du dossier en commande DOS */
 %mend;
 
-/* Macro Getlib : Crée un dossier et le place en libname */
+/* Macro Getlib : Cree un dossier et le place en libname */
 %macro Getlib(nom, dossier);
     option NOXWAIT;  
     %if %sysfunc(fexist(&basefile)) NE 0 %then %do;
-        x mkdir "&dossier.";  /* Création du dossier en commande DOS si inexistant */
+        x mkdir "&dossier.";  /* Creation du dossier en commande DOS si inexistant */
     %end;
     libname &nom "&dossier."; /* Assignation de la libname */
-    %vider(&nom);  /* Appel de la macro pour vider le contenu si nécessaire */
+    %vider(&nom);  /* Appel de la macro pour vider le contenu si necessaire */
 %mend;
 
-/* Macro pour créer une table de noms */
+/* Macro pour creer une table de noms */
 %macro getnomtable(stu);
-    /* Création d`une table nommée nomtable dans WORK avec la liste des tables présentes dans la libname spécifiée */
+    /* Creation d une table nommee nomtable dans WORK avec la liste des tables presentes dans la libname specifiee */
     %let stuMaj = %sysfunc(UPCASE(&stu.));
     data nomtable;
         set sashelp.vstable;
         where libname = "&stuMaj";
-        /* Suppression des tables non nécessaires */
-        if memname in (`CLINICALTRIAL`, `QGROUP`, `QGROUPQUESTION`, `STUDYVISITCRFPAGE`, `DATAITEMRESPONSE`, 
-                       `SITE`, `DATAITEM`, `CRFELEMENT`, `CRFPAGE`, `CRFPAGEINSTANCE`, 
-                       `DATAITEMVALIDATION`, `MACROCOUNTRY`, `MIMESSAGE`, `STUDYVISIT`, 
-                       `TRIALSITE`, `TRIALSUBJECT`, `VALIDATIONTYPE`, `VALUEDATA`, 
-                       `TEMP`, `FICMYFN`, `FM`, `FINAL`, `NOMTABLE`, `TRIAL`, 
-                       `VISIT`, `VISIT1`, `PAT`, `ERROR`) then delete;
+        /* Suppression des tables non necessaires */
+        if memname in ("CLINICALTRIAL", "QGROUP", "QGROUPQUESTION", "STUDYVISITCRFPAGE", "DATAITEMRESPONSE", 
+                       "SITE", "DATAITEM", "CRFELEMENT", "CRFPAGE", "CRFPAGEINSTANCE", 
+                       "DATAITEMVALIDATION", "MACROCOUNTRY", "MIMESSAGE", "STUDYVISIT", 
+                       "TRIALSITE", "TRIALSUBJECT", "VALIDATIONTYPE", "VALUEDATA", 
+                       "TEMP", "FICMYFN", "FM", "FINAL", "NOMTABLE", "TRIAL", 
+                       "VISIT", "VISIT1", "PAT", "ERROR") then delete;
     run;
 %mend;
 
@@ -71,13 +71,13 @@
     quit;
 %mend;
 
-/* Macro pour vider toutes les tables d`une libname */
+/* Macro pour vider toutes les tables d une libname */
 %macro vider(lib);
-    %put Macro vider activée : lib = &lib;
+    %put Macro vider activee : lib = &lib;
     data nomtable;
         set sashelp.vstable;
         where libname = "&lib.";
-        if memname in (`TIMEDOWN`, `timedown`, `nomtable`) then delete;
+        if memname in ("TIMEDOWN", "timedown", "nomtable") then delete;
     run;
     
     proc sql noprint;
@@ -97,13 +97,13 @@
 %macro openFile(Libname, XPTpath, basefile);
     %getlib(&Libname, &basefile);
     %if %sysfunc(fexist(&basefile)) NE 0 %then %do;
-        %put ERROR: Le dossier &basefile n`existe pas;
+        %put ERROR: Le dossier &basefile n existe pas;
     %end;
     %else %if %sysfunc(libref(&Libname)) NE 0 %then %do;
-        %put ERROR: La libname &Libname n`a pas été créée;
+        %put ERROR: La libname &Libname n a pas ete creee;
     %end;
     %else %if %sysfunc(fexist(&XPTpath)) NE 0 %then %do;
-        %put ERROR: Le dossier &XPTpath n`existe pas;
+        %put ERROR: Le dossier &XPTpath n existe pas;
     %end;
     %else %do;
         filename myFN "&XPTpath";
@@ -124,7 +124,7 @@
         
         data FicmyFN;
             set FicmyFN;
-            where find(fichier, `.xpt`) > 0;
+            where find(fichier, ".xpt") > 0;
         run;
 
         proc sql noprint;
@@ -133,9 +133,9 @@
 
         data _null_;
             set FicmyFN end = findetable;
-            call symputx(`fichier` || left(_N_), fichier);
-            call symputx(`nomtable` || left(_N_), substr(fichier, 1, length(fichier) - 4));
-            if findetable then call symputx(`nbtable`, _N_);
+            call symputx("fichier" || left(_N_), fichier);
+            call symputx("nomtable" || left(_N_), substr(fichier, 1, length(fichier) - 4));
+            if findetable then call symputx("nbtable", _N_);
         run;
 
         %do i = 1 %to &nbtable.;
@@ -154,17 +154,17 @@ proc format;
     value $ATE;
 run;
 
-/* Macro pour charger les données */
+/* Macro pour charger les donnees */
 %macro dataLoad(DB = 0, note = 0, status = 0, format = 1);
     %if %symexist(pathin) = 0 or %symexist(pathout) = 0 or %symexist(path) = 0 %then %do;
-        %put ERROR: Macros SBE : La macrovariable "pathin" (&pathin) ,"pathout" (&pathout) et path  &path doivent être déclarées;
+        %put ERROR: Macros SBE : La macrovariable "pathin" (&pathin) , "pathout" (&pathout) et path  &path doivent etre declarees;
     %end;
     %else %do;
-		%if &format %then %include "&pathin\procformat.sas";
+        %if &format %then %include "&pathin\procformat.sas";
         %if &DB %then %openFile(DB, &pathin., &pathout\DB);
         %if &note %then %openFile(Note, &pathin.\Notes, &pathout.\Notes);
         %if &status %then %openFile(Status, &pathin\AuditStatus, &pathout\Status);
     %end;
 %mend;
 
-%put NOTE: ########################### Chargement des macros d`importation terminé #######################;
+%put NOTE: ########################### Chargement des macros d importation termine #######################;
