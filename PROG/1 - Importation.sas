@@ -164,7 +164,7 @@ run;
         %put ERROR: Macros SBE : La macrovariable "pathin" (&pathin) , "pathout" (&pathout) et path  &path doivent etre declarees;
     %end;
     %else %do;
-        %if &format=1 %then %include "&pathin\procformat.sas";
+        %if &format %then %include "&pathin\procformat.sas";
         %if &DB %then %openFile(DB, &pathin., &pathout\DB);
         %if &note %then %openFile(Note, &pathin.\Notes, &pathout.\Notes);
         %if &status %then %openFile(Status, &pathin\AuditStatus, &pathout\Status);
