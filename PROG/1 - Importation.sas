@@ -3,7 +3,7 @@
 ****************************************************************************************************************/
 
 /* Description du dossier :
-- dossier IN : contient les elements a importer, directement issu du telechargement de TrialMaster apres avec decompressé l archive.
+- dossier IN : contient les elements a importer, directement issu du telechargement de TrialMaster apres avec decompressÃ© l archive.
 - Dossier OUT : c est ici qu on stock la base qu on va lire dans sas et toutes les sorties.
 
 
@@ -151,9 +151,12 @@
 %mend;
 
 /* Format pour les dates */
-proc format;
-    value $ATE;
+
+proc format ;
+value $ate;
+value $ime;
 run;
+
 
 /* Macro pour charger les donnees */
 %macro dataLoad(DB = 0, note = 0, status = 0, format = 1);
@@ -161,7 +164,7 @@ run;
         %put ERROR: Macros SBE : La macrovariable "pathin" (&pathin) , "pathout" (&pathout) et path  &path doivent etre declarees;
     %end;
     %else %do;
-        %if &format %then %include "&pathin\procformat.sas";
+        %if &format=1 %then %include "&pathin\procformat.sas";
         %if &DB %then %openFile(DB, &pathin., &pathout\DB);
         %if &note %then %openFile(Note, &pathin.\Notes, &pathout.\Notes);
         %if &status %then %openFile(Status, &pathin\AuditStatus, &pathout\Status);
