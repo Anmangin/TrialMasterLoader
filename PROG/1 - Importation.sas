@@ -34,7 +34,10 @@
 /* Macro pour creer un dossier */
 %macro CreatFolder(dossier);
     option NOXWAIT;  /* Permet de retourner automatiquement a SAS apres l execution de la commande */
+	%if %sysfunc(fexist(&dossier)) NE 0 %then %do;
     x mkdir "&dossier.";  /* Creation du dossier en commande DOS */
+	%end;
+	%else %put NOTE: le dossier &dossier existe deja.;
 %mend;
 
 /* Macro Getlib : Cree un dossier et le place en libname */
