@@ -22,10 +22,19 @@ Ce programme SAS ouvre et traite en boucle des fichiers XPT exportés depuis Tri
 ## Configuration du Programme
 
 1. **Définition des chemins :**
-   Les chemins vers les répertoires de travail (`dir_path`, `path`, etc.) doivent être correctement définis pour s'adapter à votre environnement.
+     dir_path : c'est le dossier ou se trouve vos programmes SAS. 
+     path : c'est l'endroit ou seront stocké les dossier IN et OUT
 
-2. **Variables globales :**
-   Le script utilise des variables globales `path`, `pathin`, et `pathout` pour spécifier les dossiers de travail et de sortie.
+2. IN
+    on met dans IN les fichier décompréssé de l'export TrialMaster. ne pas oublier de choisir de sortir le fichier format.sas aussi. il ne faut pas déplacer ou renommer les fichiers.
+
+3 OUT
+  une fois Lu les différentes tables sont sockées ici. on y retrouve aussi "par defaut" les fichier qui peuvent etre généré.
+
+  
+
+4. **Variables globales :**
+   `pathin`, et `pathout`  sont importante et ne DOIVENT PAS ETRE MODIFIé. c'est déjà paramétré dans 1-Importation.
 
 ### Exemple de Fichier de Configuration
 
@@ -39,3 +48,19 @@ Ce programme SAS ouvre et traite en boucle des fichiers XPT exportés depuis Tri
 
 /* URL du dépôt Git à cloner */
 %let git_url = https://github.com/sbemangin/TrialMasterLoader.git;
+%dataLoad(DB=1,note=1,status=1);
+%CreatableTableRelance;
+```
+dataLoad est construit dans 1-importation,
+il permet de delectionner les infos à importer :
+```sas
+%dataLoad(DB = 0, note = 0, status = 0, format = 1);
+```
+pas defaut DV,note,status sont false, et format est True.
+pour une analyse, on peut charger uniquement DB. pour travailler sur les relance, il faut en plus Note et Status.
+
+
+```sas
+%CreatableTableRelance;
+```
+ce code Crée 2 table dans la work : DCR et FormStatus. le code ne se lance que si les libnames Note et Status existe, alors il ne faut pas s'amuser a renommer.  la première contient les queries de TrialMaster, et le second la liste des fiches de votre études avec les statuts (No data, Incomplete, Complete, etc.)
