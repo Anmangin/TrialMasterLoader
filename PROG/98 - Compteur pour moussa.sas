@@ -50,7 +50,7 @@ left join nbpat b on a.STNAME=b.STNAME
 group by a.STNAME,study ORDER BY STNO ;quit;
 
 %if %sysfunc(exist(Iso_file))  = 0 %then %do;
-/* on cr�� la table vide */
+/* on cree la table vide */
 data Iso_file; if 1=2;run;
 %end;
 
