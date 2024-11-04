@@ -160,14 +160,15 @@ run;
 
 /* Macro pour charger les donnees */
 %macro dataLoad(DB = 0, note = 0, status = 0, format = 1);
+
     %if %symexist(pathin) = 0 or %symexist(pathout) = 0 or %symexist(path) = 0 %then %do;
         %put ERROR: Macros SBE : La macrovariable "pathin" (&pathin) , "pathout" (&pathout) et path  &path doivent etre declarees;
     %end;
     %else %do;
-        %if &format %then %include "&pathin\procformat.sas";
-        %if &DB %then %openFile(DB, &pathin., &pathout\DB);
-        %if &note %then %openFile(Note, &pathin.\Notes, &pathout.\Notes);
-        %if &status %then %openFile(Status, &pathin\AuditStatus, &pathout\Status);
+        %if &format %then %do;%include "&pathin/procformat.sas";%end;
+        %if &DB %then %do;%openFile(DB, &pathin., &pathout\DB);%end;
+        %if &note %then %do;%openFile(Note, &pathin.\Notes, &pathout.\Notes);%end;
+        %if &status %then %do;%openFile(Status, &pathin\AuditStatus, &pathout\Status);%end;
     %end;
 %mend;
 
