@@ -1,5 +1,5 @@
 
-%Macro ISO_Metrics(study=Empty,print=0);
+%Macro ISO_Metrics(study=Empty,print=0,pathprint=r:);
 
   %if %symexist(pathin) = 0 or %symexist(pathout) = 0 or %symexist(path) = 0 %then %do;
         %put ERROR: Macros SBE : La macrovariable "pathin" (&pathin) , "pathout" (&pathout) et path  &path doivent etre declarees;
@@ -55,10 +55,12 @@ data Iso_file; if 1=2;run;
 %end;
 
 data Iso_file; set Iso_file sitecount;run;
+proc sort data=Iso_file nodupkey; by study STNAME nbpat;run;
+
 %CreatFolder(&pathout\DOSSIER\&datefile.);
 
 %if &print %Then %do;
-ods excel file="&pathout\DOSSIER\&datefile.\&datefile. fichier pour moussa.xlsx" ;
+ods excel file="&pathprint\&datefile. fichier pour moussa.xlsx" ;
 proc print data=Iso_file label noobs;run;
 ods excel close;
 %end;
