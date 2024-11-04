@@ -66,3 +66,6 @@ ods excel close;
 %end;
 %end;
 %mend;
+
+
+%put NOTE: ########################### Chargement des macros ISO termine #######################;
