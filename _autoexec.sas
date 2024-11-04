@@ -8,5 +8,6 @@
 %else %do;
     %include "&dir_path/&local_folder./PROG/1 - Importation.sas";
     %include "&dir_path/&local_folder./PROG/2 - Relance.sas";
+    %include "&dir_path/&local_folder./PROG/4 - imprimer relance.sas";
     %include "&dir_path/&local_folder./PROG/98 - ISO_Metrics.sas";
 %end;
