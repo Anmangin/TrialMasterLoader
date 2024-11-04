@@ -308,3 +308,6 @@ data FormStatus; set FormStatus2;run;
 %creation_DCR;
 %creation_FormStatus;
 %mend;
+
+
+%put NOTE: ########################### Chargement des macros de relance  termine #######################;
