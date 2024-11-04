@@ -2,11 +2,11 @@
 ************************************************************************************************************************************************************************
                                                                Fichier de de relance TrialMaster, Etude Better2
 ************************************************************************************************************************************************************************
------------------- ne rien toucher aprÃ¨s ici ---------------------
+------------------ ne rien toucher apres ici ---------------------
 Description du dossier :
-dossier DB : contient les donnÃ©es de l'Ã©tude exportÃ©
-dossier Status : contients les statuts eportÃ© de l'etude
-dossier IMP : contients les Ã©lÃ©ments a importer.
+dossier DB : contient les donnees de l'etude exporte
+dossier Status : contients les statuts eporte de l'etude
+dossier IMP : contients les elements a importer.
 au niveau de l'export dans trialmaster, il est important de choisir XportSas et codelist = Yes.
 l'imports des queries doit etre faire dans le fichier Queries.xlsx;
 ;
@@ -15,7 +15,7 @@ l'imports des queries doit etre faire dans le fichier Queries.xlsx;
 
 
 %macro getnomtable(stu);
-/*    crÃ©ation d'une table nommÃ© nomtable dans la work avec la liste de table prÃ©sent dans la libname appellÃ© */
+/*    creation d'une table nomme nomtable dans la work avec la liste de table present dans la libname appelle */
 %let stuMaj=%sysfunc(UPCASE(&stu.));
 
 data nomtable ;set sashelp.vstable;where libname="&stuMaj";
@@ -32,25 +32,25 @@ run;
         %put ERROR: La libname NOTE n a pas ete creee;
     %end;
 	%else %do;
-%getnomtable(NOTE);	 /* crÃ©ation de nomtable, la liste des tables dans NOTE */
+%getnomtable(NOTE);	 /* creation de nomtable, la liste des tables dans NOTE */
 
   data _null_;
 set nomtable end=finalf;
 call symputx('memname'||left(_N_),memname);	/* chargement du nom de la table dans &memname1 / &memname2 / etc... pour la boucle */
-if finalf then call symputx('nbtable',_N_); /* crÃ©ation de la macro variable &nbtable le nombre de table dans la librairie note */
+if finalf then call symputx('nbtable',_N_); /* creation de la macro variable &nbtable le nombre de table dans la librairie note */
 run;
 
 
-%do i=1 %to &nbtable; /* on crÃ©e une boucle pour gerer toutes les tables  1 Ã  1 */
+%do i=1 %to &nbtable; /* on cree une boucle pour gerer toutes les tables  1 a  1 */
 %put travail sur la table &&memname&i;
 
 
 
-/* evaluation des formats dans la table chargÃ© */
+/* evaluation des formats dans la table charge */
 
 proc contents noprint data=db.&&memname&i out=temp_format;run;
- 	%if &i=1 %then %do;data format_db;set temp_format;run;%end;  /* chargement dans format_db Ã  la premiere itÃ©ration */
-%if &i>1 %then %do;data format_db;set format_db temp_format;run;%end;  /* chargement dans format_db dans les autres itÃ©rations  dans Ã©liminer les informations dÃ©jÃ  chargÃ© */
+ 	%if &i=1 %then %do;data format_db;set temp_format;run;%end;  /* chargement dans format_db a  la premiere iteration */
+%if &i>1 %then %do;data format_db;set format_db temp_format;run;%end;  /* chargement dans format_db dans les autres iterations  dans eliminer les informations deja  charge */
 
 
  /* Chargement des notes brut dans la table tempDCR */
@@ -63,20 +63,20 @@ proc sql noprint; create table tempDCR as select a.*, VISIT1 from tempDCR3 a lef
  proc sort; by TrlObjec DetailNo;run; 
 data tempDCR;set tempDCR;by TrlObjec; if last.TrlObjec;run;
 
-%if &i=1 %then %do;data DCR;set tempDCR;run;%end;  /* chargement dans DCR Ã  la premiere itÃ©ration */
-%if &i>1 %then %do;data DCR;set DCR tempDCR;run;%end;  /* chargement dans DCR dans les autres itÃ©rations  dans Ã©liminer les informations dÃ©jÃ  chargÃ© */
+%if &i=1 %then %do;data DCR;set tempDCR;run;%end;  /* chargement dans DCR a  la premiere iteration */
+%if &i>1 %then %do;data DCR;set DCR tempDCR;run;%end;  /* chargement dans DCR dans les autres iterations  dans eliminer les informations deja  charge */
 %end;
  data DCR;set DCR;if CURSTATE="No Query" or CURSTATE="Responded" or CURSTATE="Closed" then delete;run;
  
 %suppr(tempDCR);%suppr(tempDCR2);%suppr(tempDCR3);%suppr(nomtable);%suppr(temp_format);
 
-/* chargement des formats associÃ© dans la table DCR */
+/* chargement des formats associe dans la table DCR */
 proc sort data=format_db nodupkey;by NAME;run;
 proc sql noprint; create table DCR_temp_format as select dcr.*,FORMAT,TYPE from dcr left join format_db on NAME=CTVar;quit;
 data DCR; set DCR_temp_format;format responseTXT $50.; ;run;
  %suppr(DCR_temp_format);
 
-/* par defaut, DCR contient les codes sans les formats, ici on crÃ©e la variable responseTXT qui contient la dÃ©code pour les catÃ©gories et les dates */
+/* par defaut, DCR contient les codes sans les formats, ici on cree la variable responseTXT qui contient la decode pour les categories et les dates */
 
 data _null_;
 set DCR end=finalf;
@@ -178,12 +178,12 @@ proc sort; by SITEC SUBJID VISIT1 FORMID ;run;
     %end;
 	%else %do;
 
-	%getnomtable(STATUS);	 /* crÃ©ation de nomtable, la liste des tables dans NOTE */
+	%getnomtable(STATUS);	 /* creation de nomtable, la liste des tables dans NOTE */
 
   data _null_;
 set nomtable end=finalf;
 call symputx('memname'||left(_N_),memname);	/* chargement du nom de la table dans &memname1 / &memname2 / etc... pour la boucle */
-if finalf then call symput('nbtable',_N_); /* crÃ©ation de la macro variable &nbtable le nombre de table dans la librairie note */
+if finalf then call symput('nbtable',_N_); /* creation de la macro variable &nbtable le nombre de table dans la librairie note */
 run;
 
 
@@ -197,10 +197,10 @@ data temp_FormStatus;set STATUS.&&memname&i;run;
   %suppr(temp_FormStatus);
    %suppr(nomtable);
 
-   /* CrÃ©ation de VDAT dans un format adaptÃ© */
+   /* Creation de VDAT dans un format adapte */
 data FormStatus;set FormStatus;vn=VISIT1*1;format VDAT DDMMYY10.;if VISDAT NE "" then VDAT=mdy(substr(strip(VISDAT),6,2),substr(strip(VISDAT),9,2),substr(strip(VISDAT),1,4));run;
 
-/* on crÃ©Ã©cris zRespDat mais avec un bon format datetime exploitable */
+/* on creecris zRespDat mais avec un bon format datetime exploitable */
 data FormStatus;
 set FormStatus;
 day=substr(zRespDat,9,2);
@@ -262,12 +262,12 @@ if VISIT1=. then VISIT1=200;
 run;
 
 
- /* SÃ©curitÃ© on vÃ©rifie la prÃ©sence de DCR avant d'ajouter le nombre de queries par fiche */
+ /* Securite on verifie la presence de DCR avant d'ajouter le nombre de queries par fiche */
  %getnomtable(WORK);
  data nomtable; set nomtable; where memname="DCR";run;
  proc sql noprint; select count(*) into: pres_dcr from nomtable;quit;
  %suppr(nomtable);
- %put nombre de table DCR prÃ©sent (1 attendu) : &pres_dcr ;
+ %put nombre de table DCR present (1 attendu) : &pres_dcr ;
  %if &pres_dcr=1 %then %do;
 
  /*	   calcul et ajout de nbq "Number of queries" dans FormStatus */
@@ -281,7 +281,7 @@ data FormStatus;set FormStatus_temp;run;
 
 
 %end;
-/*crÃ©ation des liens */
+/*creation des liens */
 data FormStatus;set FormStatus;
 /* API decrypt : m=17 -> aller dans l'onglet Browse
   soid=-> selectionner le centre
@@ -289,7 +289,7 @@ data FormStatus;set FormStatus;
    &void=' ->		selectionner la visite
    &foid=' -> la fiche
   &otid=8&said=10 -> je sais pas mais ca marche
-   tgn-> faire remplir le nom de l'Ã©tude automatiquement
+   tgn-> faire remplir le nom de l'etude automatiquement
 	&un=-> faire remplir le pseudo automatiquement */
 links=cats("&base",  FORMID ,'?returnUrl=%2F50036%2FTrialMaster%2FPatientListView%2FSelectPatient?uniqueReportingGridId%3D17000000%26id%3D' , PATIENTI , '%26ngrd%3D1');
 ;run;
