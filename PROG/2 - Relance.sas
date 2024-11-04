@@ -108,6 +108,11 @@ run;
  retain  TRCAP TRIALID SITEC SITEID SUBJID PATIENTI VISIT1 VISITN VISITID	CRFName  CRFInsNo FORMID CRFStat Group GRPINSNO QuestTxt  responseTXT MsgType CURSTATE Comment CTACTDTC FromUser links;
  set dcr;
  label 
+ SUBJID="Patient N°"
+ VISITN="Visite"
+links="Lien vers la page"
+QuestTxt="Question"
+responseTXT="Réponse saisie"
 TRNAME	= "Study"
 TRNO	="Study Number"
 TRCAP	="Trial Caption"
