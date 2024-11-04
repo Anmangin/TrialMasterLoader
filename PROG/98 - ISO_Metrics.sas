@@ -14,10 +14,10 @@
         %put ERROR: La libname STATUS n a pas ete creee;
 	    %end;
 		 %else %if %sysfunc(exist(db.pat))  = 0 %then %do;
-    %put La table db.pat existe pas, la macro ISO_Metrics en a besoin.;
+    %put ERROR: La table db.pat existe pas, la macro ISO_Metrics en a besoin.;
 %end;
  %else %if %sysfunc(exist(Formstatus))  = 0 %then %do;
-    %put La table Formstatus existe pas, la macro ISO_Metrics en a besoin.;
+    %put ERROR: La table Formstatus existe pas, la macro ISO_Metrics en a besoin.;
 %end;
     %else %do;
 
