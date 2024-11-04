@@ -1,5 +1,5 @@
 
-%Macro ISO_Metrics;
+%Macro ISO_Metrics(study=Empty,print=0);
 
   %if %symexist(pathin) = 0 or %symexist(pathout) = 0 or %symexist(path) = 0 %then %do;
         %put ERROR: Macros SBE : La macrovariable "pathin" (&pathin) , "pathout" (&pathout) et path  &path doivent etre declarees;
@@ -13,6 +13,12 @@
 			  %else %if %sysfunc(libref(STATUS)) NE 0 %then %do;
         %put ERROR: La libname STATUS n a pas ete creee;
 	    %end;
+		 %else %if %sysfunc(exist(db.pat))  = 0 %then %do;
+    %put La table db.pat existe pas, la macro ISO_Metrics en a besoin.;
+%end;
+ %else %if %sysfunc(exist(Formstatus))  = 0 %then %do;
+    %put La table Formstatus existe pas, la macro ISO_Metrics en a besoin.;
+%end;
     %else %do;
 
    
@@ -43,11 +49,18 @@ left join nbpat b on a.STNAME=b.STNAME
 
 group by a.STNAME,study ORDER BY STNO ;quit;
 
+%if %sysfunc(exist(Iso_file))  = 0 %then %do;
+/* on cr�� la table vide */
+data Iso_file; if 1=2;run;
+%end;
 
-
+data Iso_file; set Iso_file sitecount;run;
 %CreatFolder(&pathout\DOSSIER\&datefile.);
+
+%if &print %Then %do;
 ods excel file="&pathout\DOSSIER\&datefile.\&datefile. fichier pour moussa.xlsx" ;
-proc print data=sitecount label noobs;run;
+proc print data=Iso_file label noobs;run;
 ods excel close;
+%end;
 %end;
 %mend;
