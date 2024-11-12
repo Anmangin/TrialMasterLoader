@@ -31,7 +31,7 @@
 %let git_url = https://github.com/sbemangin/TrialMasterLoader.git;
 
 /* Installation de la version specifique des macros depuis le depot Git */
-%install_git(dir_path = &dir_path, git_url = &git_url, version =74f32a3, local_folder = git_TrialMasterLoader);
+%install_git(dir_path = &dir_path, git_url = &git_url, version =c6b678d, local_folder = git_TrialMasterLoader);
 
 /* Affichage de messages de log pour la version installee */
 %put WARNING: INSTALL_GIT: git_macro_version = &git_macro_version;
