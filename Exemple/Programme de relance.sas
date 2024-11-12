@@ -31,10 +31,10 @@
 
 
 /* URL du depot Git contenant les macros de chargement de donnees */
-%let git_url = https://github.com/sbemangin/TrialMasterLoader.git;
+%let git_url = https://github.com/Anmangin/TrialMasterLoader.git;
 
 /* Installation de la version specifique des macros depuis le depot Git */
-%install_git(dir_path = &dir_path, git_url = &git_url, version = 906c778, local_folder = git_TrialMasterLoader);
+%install_git(dir_path = &dir_path, git_url = &git_url, version =74f32a3, local_folder = git_TrialMasterLoader);
 
 /* Affichage de messages de log pour la version installee */
 %put WARNING: INSTALL_GIT: git_macro_version = &git_macro_version;
