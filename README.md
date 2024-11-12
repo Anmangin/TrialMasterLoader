@@ -39,16 +39,52 @@ Ce programme SAS ouvre et traite en boucle des fichiers XPT exportés depuis Tri
 ### Exemple de Fichier de Configuration
 
 ```sas
-%let dir_path = R:\test;
-%global path pathin pathout;
-%let path=\\nas-01\SBE_ETUDES\MEDEA\8 - DM\SAS;
+/******************************************************************************
+* Programme: Chargement de relance général (GITHUBTrialMasterLoader)
+* Description: Ce programme permet de charger les donnees d'un étude TM
+*              en utilisant un utilitaire Git pour integrer les macros SAS
+*              et des fonctions de chargement de donnees.
+* Auteur: Anthony Mangin
+* Date de creation: 2024-11-04
+* Notes: Utilise le script "git_utils.sas" pour installer et gerer les macros
+*        necessaires depuis un depot Git.
+******************************************************************************/
+%global path pathin pathout DATEFILE study;   /* Declaration des variables globales ne pas toucher*/
 
-/* Inclure la macro git_utils */
-%include "&dir_path\git_utils.sas";
+/* -------------------------PARTIE A CUSTO------------------------------------------*/
+/* Declaration des chemins et variables globales */
+/* Chemin reseau pour les fichiers de l'etude */
+%let path = C:\Users\a_mangin\Documents\montest;
 
-/* URL du dépôt Git à cloner */
-%let git_url = https://github.com/sbemangin/TrialMasterLoader.git;
-%dataLoad(DB=1,note=1,status=1);
+%let study=BETTER2;
+
+
+/* -------------------------NE PAS TOUCHER AU RESTE SANS SAVOIR CE QU'ON FAIT ! ------------------------------------------*/
+
+
+
+/* Inclusion de l'utilitaire Git pour gerer les macros depuis le depot Git */
+
+%let dir_path = \\nas-01\SBE\05 - Data Managers\TrialMaster Data Manager\SAS\GITHUB;   /* Chemin local pour les fichiers de test */
+%include "&dir_path\git_utils.sas";  /* Chemin du script d'installation Git */
+
+
+
+/* URL du depot Git contenant les macros de chargement de donnees */
+%let git_url = https://github.com/Anmangin/TrialMasterLoader.git;
+
+/* Installation de la version specifique des macros depuis le depot Git */
+%install_git(dir_path = &dir_path, git_url = &git_url, version =c6b678d, local_folder = git_TrialMasterLoader);
+
+/* Affichage de messages de log pour la version installee */
+%put WARNING: INSTALL_GIT: git_macro_version = &git_macro_version;
+%put &pathin; /* Chemin d'entree pour confirmation */
+
+option mprint=no;
+/* Execution de la macro de chargement de donnees avec des parametres specifiques */
+%dataLoad(DB = 1, note = 1, status = 1);
+
+/* Creation d'une table de relance si necessaire */
 %CreatableTableRelance;
 ```
 dataLoad est construit dans 1-importation,
